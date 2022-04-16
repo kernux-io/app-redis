@@ -136,3 +136,13 @@ cd $UK_WORKDIR/unikraft && git checkout stable
     -e /home/kernux/Documents/thesis/app-redis/config \
     -m 500
 ```
+
+```sh
+sudo iptables -I FORWARD -i br0 -o br0 -j ACCEPT
+```
+
+## Test the Application
+
+```sh
+telnet 192.168.1.20 6379
+```

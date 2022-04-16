@@ -1,0 +1,70 @@
+#!/usr/bin/bash
+
+
+## Define constants
+declare -r MAXIMUM_COUNT=65536
+
+## Define default values
+export COUNT=1
+
+## Process input arguments
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      echo "$package - spin up wanted number of Redis unikernels"
+      echo " "
+      echo "$package [options] application [arguments]"
+      echo " "
+      echo "options:"
+      echo "-h, --help                show brief help"
+      echo "-c, --count=COUNT         specify the number of Redis unikernels to create (1 - 65535)"
+      exit 0
+      ;;
+    -c)
+      shift
+      if test $# -gt 0; then
+        if [[ $1 -le $MAXIMUM_COUNT && $1 =~ ^[0-9]+$ ]]; then
+          export COUNT=$1
+        else
+          echo "Please specify an integer value (between 1 - 65535) for the number of Redis unikernels to create."
+          exit 1
+        fi
+      fi
+      shift
+      ;;
+    --count*)
+      if [[ $2 -le $MAXIMUM_COUNT && $2 =~ ^[0-9]+$ ]]; then
+        export COUNT=$2
+      else
+        echo "Please specify an integer value (between 1 - 65535) for the number of Redis unikernels to create."
+        exit 1
+      fi
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+kernel="/home/kernux/Documents/thesis/app-redis/artifacts/redis_kvm-x86_64_base"
+netId1="192"
+netId2="168"
+netId3="1"
+hostId="1"
+
+## Create new network bridges
+for i in $(seq $COUNT); do
+  i=$((20+$i-1))
+  
+  /home/kernux/.local/bin/qemu-guest \
+    -k $kernel \
+    -a "netdev.ipv4_addr=$netId1.$netId2.$netId3.$i netdev.ipv4_gw_addr=$netId1.$netId2.$netId3.$hostId netdev.ipv4_subnet_mask=255.255.255.0 -- /redis.conf" \
+    -b br0 \
+    -e /home/kernux/Documents/thesis/app-redis/config \
+    -m 500 \
+    -x
+done
+
+## Make sure br0 is forwarded
+sudo iptables -I FORWARD -i br0 -o br0 -j ACCEPT
