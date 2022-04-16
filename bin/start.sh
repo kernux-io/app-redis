@@ -64,7 +64,30 @@ for i in $(seq $COUNT); do
     -e /home/kernux/Documents/thesis/app-redis/config \
     -m 500 \
     -x
+
+  sleep 1
 done
 
 ## Make sure br0 is forwarded
 sudo iptables -I FORWARD -i br0 -o br0 -j ACCEPT
+
+# Await stable state
+sleep 30
+
+## Test connections
+running_apps=0
+for i in $(seq $COUNT); do
+  i=$((20+$i-1))
+
+  res=$(/home/kernux/Documents/thesis/app-redis/benchmark/ycsb/bin/redis-cli \
+    -h $netId1.$netId2.$netId3.$i \
+    -p 6379 \
+    ping)
+
+  if [ $res = "PONG" ]
+  then
+    ((running_apps++))
+  fi
+done
+
+echo "Number of started Redis instances: $running_apps / $COUNT"
