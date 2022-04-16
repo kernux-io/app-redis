@@ -6,7 +6,7 @@ This repository contains everything related to the Redis applications constructe
 
 ```
 .
-├── artifacts                         
+├── artifacts
 │     ├── redis_kvm-x86_64_base
 │     ├── redis_kvm-x86_64_dce
 │     └── redis_kvm-x86_64_dce-allocpool
