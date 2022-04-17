@@ -7,6 +7,7 @@ export HOSTID=20
 export PORT=6379
 export DIRECTORY="/home/kernux/Documents/thesis/app-redis/benchmark/ycsb"
 export OUTPUT="default"
+export ROUNDS=50
 export COUNT=1
 
 ## Process input arguments
@@ -24,6 +25,7 @@ while test $# -gt 0; do
       echo "-p            define port"
       echo "-d            define the YCSB directory path"
       echo "-o            define the sub-directory under results where outputs files are placed"
+      echo "-r            define the number of times each Redis instance should execute a benchmark"
       echo "-c            specify the number of Redis applications running"
       exit 0
       ;;
@@ -62,6 +64,13 @@ while test $# -gt 0; do
       fi
       shift
       ;;
+    -r)
+      shift
+      if test $# -gt 0; then
+        export ROUNDS=$1
+      fi
+      shift
+      ;;
     -c)
       shift
       if test $# -gt 0; then
@@ -82,31 +91,35 @@ done
 
 unikernel()
 {
-  for i in $(seq $COUNT); do
-    i=$(($HOSTID+$i-1))
-    
-    $DIRECTORY/bin/ycsb.sh \
-      run redis -s \
-      -P $DIRECTORY/workloads/thesis \
-      -p redis.host=192.168.1.$i \
-      -p redis.port=$PORT \
-      > $DIRECTORY/results/$OUTPUT/unikernel_$i.txt \
-      &
+  for r in $(seq $ROUNDS); do
+    for i in $(seq $COUNT); do
+      i=$(($HOSTID+$i-1))
+      
+      $DIRECTORY/bin/ycsb.sh \
+        run redis -s \
+        -P $DIRECTORY/workloads/thesis \
+        -p redis.host=192.168.1.$i \
+        -p redis.port=$PORT \
+        > $DIRECTORY/results/$OUTPUT/unikernel_$i.txt \
+        &
+    done
   done
 }
 
 docker()
 {
-  for i in $(seq $COUNT); do
-    i=$(($PORT+$i-1))
-    
-    $DIRECTORY/bin/ycsb.sh \
-      run redis -s \
-      -P $DIRECTORY/workloads/thesis \
-      -p redis.host=192.168.1.$HOSTID \
-      -p redis.port=$i \
-      > $DIRECTORY/results/$OUTPUT/docker_$i.txt \
-      &
+  for r in $(seq $ROUNDS); do
+    for i in $(seq $COUNT); do
+      i=$(($PORT+$i-1))
+      
+      $DIRECTORY/bin/ycsb.sh \
+        run redis -s \
+        -P $DIRECTORY/workloads/thesis \
+        -p redis.host=192.168.1.$HOSTID \
+        -p redis.port=$i \
+        > $DIRECTORY/results/$OUTPUT/docker_$i.txt \
+        &
+    done
   done
 }
 
