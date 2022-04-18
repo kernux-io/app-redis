@@ -10,7 +10,9 @@ services:
      - /home/kernux/Documents/thesis/app-redis/config/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
      - REDIS_REPLICATION_MODE=master
-    mem_limit: 100m
+    mem_limit: 200m
+    cpus: 1
+    cpuset: "3"
     networks:
       - redis_network
 
@@ -18,25 +20,3 @@ networks:
   redis_network:
     external: true
     name: redis_network
-
-#networks:
-#  redis_network: 
-#    driver: bridge
-#    name: redis_network
-#    ipam:
-#     config:
-#       - subnet: 172.19.1.0/16
-#         gateway: 172.19.1.1
-
-
-#networks:
-#  node_net:
-#    ipv4_address: 172.28.1.4
-
-# networking for the Redis container
-#networks:
-#  node_net:
-#    ipam:
-#      driver: default
-#      config:
-#       - subnet: 172.28.0.0/16

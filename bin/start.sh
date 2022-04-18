@@ -1,6 +1,11 @@
 #!/usr/bin/bash
 
 
+## Import external config
+source /home/kernux/Documents/thesis/app-redis/bin/common/cpus.sh
+source /home/kernux/Documents/thesis/app-redis/bin/common/kernel.sh
+source /home/kernux/Documents/thesis/app-redis/bin/common/network.sh
+
 ## Define constants
 declare -r MAXIMUM_COUNT=65536
 
@@ -47,12 +52,6 @@ while test $# -gt 0; do
   esac
 done
 
-kernel="/home/kernux/Documents/thesis/app-redis/artifacts/redis_kvm-x86_64_base"
-netId1="192"
-netId2="168"
-netId3="1"
-hostId="1"
-
 ## Create new network bridges
 for i in $(seq $COUNT); do
   i=$((20+$i-1))
@@ -62,7 +61,9 @@ for i in $(seq $COUNT); do
     -a "netdev.ipv4_addr=$netId1.$netId2.$netId3.$i netdev.ipv4_gw_addr=$netId1.$netId2.$netId3.$hostId netdev.ipv4_subnet_mask=255.255.255.0 -- /redis.conf" \
     -b br0 \
     -e /home/kernux/Documents/thesis/app-redis/config \
-    -m 500 \
+    -m 200 \
+    -c $CPU_COUNT \
+    -p $CPUS \
     -x
 
   sleep 1
