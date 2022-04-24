@@ -1,13 +1,29 @@
-#!/usr/bin/bash
+#!/bin/bash
+# for dir in */; do mkdir -- "$dir/foldername"; done
 
+# CHECKLIST
+# [] Start Redis application(s)
+# [] Start mem/cpu logger
+# [] Trigger test
+# [] Stop mem/cpu logger
+# [] Stop Redis application(s) 
+
+
+# Arifacts
+A1="allocpool"
+A2="base"
+A3="dce"
+A4="dce-allocpool"
+A5="falloc"
+A6="fbuddyalloc"
 
 ## Define default values
 export MODE="unikernel"
-export HOSTID=20
+export HOSTID=50
 export PORT=6379
-export DIRECTORY="/home/kernux/Documents/thesis/app-redis/benchmark/ycsb"
-export OUTPUT="default"
-export ROUNDS=50
+export DIRECTORY="/Users/t943167/Documents/private/thesis/app-redis/benchmark/ycsb"
+export OUTPUT="20i_400m_100r/unikernel_$A1"
+export ROUNDS=100
 export COUNT=1
 
 ## Process input arguments
@@ -100,7 +116,7 @@ unikernel()
         -P $DIRECTORY/workloads/thesis \
         -p redis.host=192.168.1.$i \
         -p redis.port=$PORT \
-        > $DIRECTORY/results/$OUTPUT/unikernel_$i.txt \
+        > $DIRECTORY/results/$OUTPUT/unikernel_${i}i_${r}r.txt \
         &
     done
   done
@@ -117,14 +133,18 @@ docker()
         -P $DIRECTORY/workloads/thesis \
         -p redis.host=192.168.1.$HOSTID \
         -p redis.port=$i \
-        > $DIRECTORY/results/$OUTPUT/docker_$i.txt \
+        > $DIRECTORY/results/$OUTPUT/docker_${i}i_${r}r.txt \
         &
     done
   done
 }
 
+date +”%H:%M:%S” >> $DIRECTORY/results/$OUTPUT/start_stop.txt
 if [ $MODE = "unikernel" ]; then
   unikernel
 else
   docker
 fi
+
+wait $(jobs -p)
+date +”%H:%M:%S” >> $DIRECTORY/results/$OUTPUT/start_stop.txt
