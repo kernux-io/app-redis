@@ -54,17 +54,17 @@ done
 
 ## Create new network bridges
 for i in $(seq $COUNT); do
-  i=$((20+$i-1))
+  i=$((50+$i-1))
   
   /home/kernux/.local/bin/qemu-guest \
     -k $kernel \
     -a "netdev.ipv4_addr=$netId1.$netId2.$netId3.$i netdev.ipv4_gw_addr=$netId1.$netId2.$netId3.$hostId netdev.ipv4_subnet_mask=255.255.255.0 -- /redis.conf" \
     -b br0 \
     -e /home/kernux/Documents/thesis/app-redis/config \
-    -m 200 \
+    -m 400 \
+    -x \
     -c $CPU_COUNT \
-    -p $CPUS \
-    -x
+    -p $CPUS
 
   sleep 1
 done
@@ -78,7 +78,7 @@ sleep 30
 ## Test connections
 running_apps=0
 for i in $(seq $COUNT); do
-  i=$((20+$i-1))
+  i=$((50+$i-1))
 
   res=$(/home/kernux/Documents/thesis/app-redis/benchmark/ycsb/bin/redis-cli \
     -h $netId1.$netId2.$netId3.$i \

@@ -1,4 +1,7 @@
 #!/usr/bin/bash
 
 ## Define the unikernel artifact to use
-kernel="/home/kernux/Documents/thesis/app-redis/artifacts/redis_kvm-x86_64_dce-allocpool"
+path_artifacts="/home/kernux/Documents/thesis/app-redis/artifacts"
+artifact="redis_kvm-x86_64"
+type="_base"
+kernel="${path_artifacts}/${artifact}${type}"
