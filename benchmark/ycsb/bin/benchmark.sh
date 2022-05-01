@@ -1,15 +1,6 @@
 #!/bin/bash
-# for dir in */; do mkdir -- "$dir/foldername"; done
 
-# CHECKLIST
-# [] Start Redis application(s)
-# [] Start mem/cpu logger
-# [] Trigger test
-# [] Stop mem/cpu logger
-# [] Stop Redis application(s) 
-
-
-# Arifacts
+# Artifacts
 A1="allocpool"
 A2="base"
 A3="dce"
@@ -22,7 +13,8 @@ export MODE="unikernel"
 export HOSTID=50
 export PORT=6379
 export DIRECTORY="/Users/t943167/Documents/private/thesis/app-redis/benchmark/ycsb"
-export OUTPUT="20i_400m_100r/unikernel_$A1"
+export OUTPUT="20i_400m_3x100r/unikernel_$A6"
+export SET=3
 export ROUNDS=100
 export COUNT=1
 
@@ -107,35 +99,43 @@ done
 
 unikernel()
 {
-  for r in $(seq $ROUNDS); do
-    for i in $(seq $COUNT); do
-      i=$(($HOSTID+$i-1))
-      
-      $DIRECTORY/bin/ycsb.sh \
-        run redis -s \
-        -P $DIRECTORY/workloads/thesis \
-        -p redis.host=192.168.1.$i \
-        -p redis.port=$PORT \
-        > $DIRECTORY/results/$OUTPUT/unikernel_${i}i_${r}r.txt \
-        &
+  echo "Unikernel run starting..."
+  for s in $(seq $SET); do
+    for r in $(seq $ROUNDS); do
+      for i in $(seq $COUNT); do
+        i=$(($HOSTID+$i-1))
+        
+        $DIRECTORY/bin/ycsb.sh \
+          run redis -s \
+          -P $DIRECTORY/workloads/thesis \
+          -p redis.host=192.168.1.$i \
+          -p redis.port=$PORT \
+          > $DIRECTORY/results/$OUTPUT/unikernel_${i}i_s${s}_${r}r.txt \
+          &
+      done
     done
+    wait $(jobs -p)
   done
 }
 
 docker()
 {
-  for r in $(seq $ROUNDS); do
-    for i in $(seq $COUNT); do
-      i=$(($PORT+$i-1))
-      
-      $DIRECTORY/bin/ycsb.sh \
-        run redis -s \
-        -P $DIRECTORY/workloads/thesis \
-        -p redis.host=192.168.1.$HOSTID \
-        -p redis.port=$i \
-        > $DIRECTORY/results/$OUTPUT/docker_${i}i_${r}r.txt \
-        &
+  echo "Docker run starting..."
+  for s in $(seq $SET); do
+    for r in $(seq $ROUNDS); do
+      for i in $(seq $COUNT); do
+        i=$(($PORT+$i-1))
+        
+        $DIRECTORY/bin/ycsb.sh \
+          run redis -s \
+          -P $DIRECTORY/workloads/thesis \
+          -p redis.host=192.168.1.$HOSTID \
+          -p redis.port=$i \
+          > $DIRECTORY/results/$OUTPUT/docker_${i}i_s${s}_${r}r.txt \
+          &
+      done
     done
+    wait $(jobs -p)
   done
 }
 
@@ -145,6 +145,4 @@ if [ $MODE = "unikernel" ]; then
 else
   docker
 fi
-
-wait $(jobs -p)
 date +”%H:%M:%S” >> $DIRECTORY/results/$OUTPUT/start_stop.txt
