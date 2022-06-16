@@ -1,4 +1,4 @@
 .DS_Store
 config/dev/**
 unikernel/apps/**/build/**
-benchmark/ycsb/results/logs/**
+benchmark/ycsb/results/logs**

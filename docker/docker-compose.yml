@@ -10,9 +10,7 @@ services:
      - /home/kernux/Documents/thesis/app-redis/config/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
      - REDIS_REPLICATION_MODE=master
-    mem_limit: 150m
-    cpus: 1
-    cpuset: "3"
+    mem_limit: 200m
     networks:
       - redis_network
 
